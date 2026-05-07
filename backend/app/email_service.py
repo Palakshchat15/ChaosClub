@@ -1,31 +1,24 @@
-import aiosmtplib
 import os
-import asyncio
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import requests
 from dotenv import load_dotenv
-
-# DIAGNOSTIC: Print all keys on startup
-print(f"DIAGNOSTIC STARTUP - Found Keys: {[k for k in os.environ.keys() if 'EMAIL' in k or 'DATABASE' in k]}")
 
 if not os.getenv("RENDER"):
     load_dotenv()
 
-async def send_verification_email(to_email: str, code: str):
-    email_user = os.getenv("EMAIL_USER", "").strip()
-    email_password = os.getenv("EMAIL_PASSWORD", "").strip()
-    
-    # Debug: Check if they are actually populated
-    print(f"DEBUG: Found credentials - User Length: {len(email_user)}, Pwd Length: {len(email_password)}")
-    
-    if not email_user or not email_password:
-        if not email_user: print("DEBUG: EMAIL_USER is empty!")
-        if not email_password: print("DEBUG: EMAIL_PASSWORD is empty!")
-        print(f"--- VERIFICATION CODE for {to_email}: {code} ---")
+RESEND_API_KEY = os.getenv("RESEND_API_KEY")
+
+def send_verification_email(to_email: str, code: str):
+    if not RESEND_API_KEY:
+        print(f"DEBUG: RESEND_API_KEY not set. Verification code for {to_email} is: {code}")
         return False
 
-    subject = "Chaos Club - Verification Code"
-    body = f"""
+    url = "https://api.resend.com/emails"
+    headers = {
+        "Authorization": f"Bearer {RESEND_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    html_content = f"""
     <html>
       <body style="background-color: #0d1117; color: #ffffff; font-family: sans-serif; padding: 20px; text-align: center;">
         <div style="max-width: 500px; margin: 0 auto; background-color: #161b22; padding: 30px; border-radius: 12px; border: 1px solid #52ff1a;">
@@ -40,47 +33,37 @@ async def send_verification_email(to_email: str, code: str):
     </html>
     """
 
-    msg = MIMEMultipart()
-    msg['From'] = f"Chaos Club <{email_user}>"
-    msg['To'] = to_email
-    msg['Subject'] = subject
-    msg.attach(MIMEText(body, 'html'))
+    payload = {
+        "from": "Chaos Club <onboarding@resend.dev>",
+        "to": [to_email],
+        "subject": "Chaos Club - Verification Code",
+        "html": html_content
+    }
 
     try:
-        await aiosmtplib.send(
-            msg,
-            hostname="smtp.gmail.com",
-            port=587,
-            start_tls=True,
-            username=email_user,
-            password=email_password,
-            timeout=10, # Set a 10s timeout to catch blocks quickly
-        )
-        print(f"SUCCESS: Verification email sent to {to_email}")
-        return True
-    except asyncio.TimeoutError:
-        print(f"NETWORK ERROR: Connection to Gmail timed out for {to_email}. Render/ISP might be blocking Port 587.")
-        return False
-    except aiosmtplib.SMTPAuthenticationError:
-        print(f"AUTH ERROR: Gmail rejected credentials for {to_email}. Check App Password (no spaces!).")
-        return False
+        response = requests.post(url, headers=headers, json=payload)
+        if response.status_code in [200, 201]:
+            print(f"SUCCESS: Resend verification email sent to {to_email}")
+            return True
+        else:
+            print(f"ERROR: Resend API failed: {response.text}")
+            return False
     except Exception as e:
-        print(f"UNEXPECTED ERROR sending email to {to_email}: {type(e).__name__}: {e}")
+        print(f"CRITICAL ERROR calling Resend: {e}")
         return False
 
-async def send_new_article_email(to_email: str, article_title: str, article_id: int):
-    email_user = os.getenv("EMAIL_USER", "").strip()
-    email_password = os.getenv("EMAIL_PASSWORD", "").strip()
-    
-    if not email_user or not email_password:
-        if not email_user: print("DEBUG: EMAIL_USER is missing for article alerts!")
-        if not email_password: print("DEBUG: EMAIL_PASSWORD is missing for article alerts!")
-        print(f"DEBUG: New article alert for {to_email}: {article_title}")
+def send_new_article_email(to_email: str, article_title: str, article_id: int):
+    if not RESEND_API_KEY:
         return False
 
     frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
-    subject = f"New Article: {article_title}"
-    body = f"""
+    url = "https://api.resend.com/emails"
+    headers = {
+        "Authorization": f"Bearer {RESEND_API_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    html_content = f"""
     <html>
       <body style="background-color: #0d1117; color: #ffffff; font-family: sans-serif; padding: 20px; text-align: center;">
         <div style="max-width: 500px; margin: 0 auto; background-color: #161b22; padding: 30px; border-radius: 12px; border: 1px solid #52ff1a;">
@@ -94,23 +77,16 @@ async def send_new_article_email(to_email: str, article_title: str, article_id: 
     </html>
     """
 
-    msg = MIMEMultipart()
-    msg['From'] = f"Chaos Club <{email_user}>"
-    msg['To'] = to_email
-    msg['Subject'] = subject
-    msg.attach(MIMEText(body, 'html'))
+    payload = {
+        "from": "Chaos Club <onboarding@resend.dev>",
+        "to": [to_email],
+        "subject": f"New Article: {article_title}",
+        "html": html_content
+    }
 
     try:
-        await aiosmtplib.send(
-            msg,
-            hostname="smtp.gmail.com",
-            port=587,
-            start_tls=True,
-            username=email_user,
-            password=email_password,
-            timeout=10,
-        )
-        return True
+        response = requests.post(url, headers=headers, json=payload)
+        return response.status_code in [200, 201]
     except Exception as e:
-        print(f"Error sending article alert to {to_email}: {e}")
+        print(f"Error sending Resend article alert: {e}")
         return False
