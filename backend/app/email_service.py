@@ -9,9 +9,6 @@ if not os.getenv("RENDER"):
     load_dotenv()
 
 async def send_verification_email(to_email: str, code: str):
-    # Diagnostic: Print all keys to see what Render is actually providing
-    print(f"DEBUG: Render Environment Keys: {[k for k in os.environ.keys() if 'EMAIL' in k or 'DATABASE' in k]}")
-    
     email_user = os.getenv("EMAIL_USER")
     email_password = os.getenv("EMAIL_PASSWORD")
     
@@ -44,12 +41,12 @@ async def send_verification_email(to_email: str, code: str):
     msg.attach(MIMEText(body, 'html'))
 
     try:
-        # Port 465 + use_tls=True is much more reliable on Render than port 587
+        # Port 587 + start_tls=True is the most compatible combination for Render
         await aiosmtplib.send(
             msg,
             hostname="smtp.gmail.com",
-            port=465,
-            use_tls=True,
+            port=587,
+            start_tls=True,
             username=email_user,
             password=email_password,
         )
@@ -95,8 +92,8 @@ async def send_new_article_email(to_email: str, article_title: str, article_id: 
         await aiosmtplib.send(
             msg,
             hostname="smtp.gmail.com",
-            port=465,
-            use_tls=True,
+            port=587,
+            start_tls=True,
             username=email_user,
             password=email_password,
         )
