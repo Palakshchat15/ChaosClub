@@ -9,6 +9,9 @@ if not os.getenv("RENDER"):
     load_dotenv()
 
 async def send_verification_email(to_email: str, code: str):
+    # Diagnostic: Print all keys to see what Render is actually providing
+    print(f"DEBUG: Render Environment Keys: {[k for k in os.environ.keys() if 'EMAIL' in k or 'DATABASE' in k]}")
+    
     email_user = os.getenv("EMAIL_USER")
     email_password = os.getenv("EMAIL_PASSWORD")
     
