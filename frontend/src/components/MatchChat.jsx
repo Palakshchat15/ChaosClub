@@ -15,10 +15,9 @@ export default function MatchChat({ matchId }) {
 
     // Use environment variable or fallback to local port
     const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsBase = window.location.port === "5173" || window.location.port === "3000"
-      ? "localhost:8000"
-      : window.location.host;
-
+    const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
+    const wsBase = backendUrl.replace("http://", "").replace("https://", "");
+    
     const url = `${wsProtocol}//${wsBase}/ws/chat/${matchId}?user_id=${auth.user_id}`;
 
     const socket = new WebSocket(url);
