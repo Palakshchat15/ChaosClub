@@ -358,7 +358,7 @@ def create_article(payload: ArticleCreateRequest, admin_user_id: int = Query(...
         
         # Notify all users in background
         if background_tasks:
-            def notify_all():
+            async def notify_all():
                 # Re-open session for background
                 local_db = SessionLocal()
                 try:
@@ -373,7 +373,7 @@ def create_article(payload: ArticleCreateRequest, admin_user_id: int = Query(...
                         )
                         # Send real email alert
                         if u.email:
-                            email_service.send_new_article_email(u.email, new_article.title, new_article.id)
+                            await email_service.send_new_article_email(u.email, new_article.title, new_article.id)
                     local_db.commit()
                 finally:
                     local_db.close()

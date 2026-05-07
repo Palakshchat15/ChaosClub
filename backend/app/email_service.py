@@ -1,12 +1,13 @@
-import smtplib
+import aiosmtplib
 import os
+import asyncio
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
 
 load_dotenv()
 
-def send_verification_email(to_email: str, code: str):
+async def send_verification_email(to_email: str, code: str):
     email_user = os.getenv("EMAIL_USER")
     email_password = os.getenv("EMAIL_PASSWORD")
     
@@ -37,19 +38,22 @@ def send_verification_email(to_email: str, code: str):
     msg.attach(MIMEText(body, 'html'))
 
     try:
-        # Using Gmail SMTP with STARTTLS (Modern standard)
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.set_debuglevel(1) # Enable debug output for logs
-        server.starttls()
-        server.login(email_user, email_password)
-        server.send_message(msg)
-        server.quit()
+        # Port 465 + use_tls=True is much more reliable on Render than port 587
+        await aiosmtplib.send(
+            msg,
+            hostname="smtp.gmail.com",
+            port=465,
+            use_tls=True,
+            username=email_user,
+            password=email_password,
+        )
         print(f"SUCCESS: Verification email sent to {to_email}")
         return True
     except Exception as e:
         print(f"CRITICAL ERROR sending email to {to_email}: {e}")
         return False
-def send_new_article_email(to_email: str, article_title: str, article_id: int):
+
+async def send_new_article_email(to_email: str, article_title: str, article_id: int):
     email_user = os.getenv("EMAIL_USER")
     email_password = os.getenv("EMAIL_PASSWORD")
     
@@ -80,11 +84,14 @@ def send_new_article_email(to_email: str, article_title: str, article_id: int):
     msg.attach(MIMEText(body, 'html'))
 
     try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(email_user, email_password)
-        server.send_message(msg)
-        server.quit()
+        await aiosmtplib.send(
+            msg,
+            hostname="smtp.gmail.com",
+            port=465,
+            use_tls=True,
+            username=email_user,
+            password=email_password,
+        )
         return True
     except Exception as e:
         print(f"Error sending article alert to {to_email}: {e}")
