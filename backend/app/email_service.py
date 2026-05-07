@@ -5,14 +5,17 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
 
-load_dotenv()
+if not os.getenv("RENDER"):
+    load_dotenv()
 
 async def send_verification_email(to_email: str, code: str):
     email_user = os.getenv("EMAIL_USER")
     email_password = os.getenv("EMAIL_PASSWORD")
     
     if not email_user or not email_password:
-        print(f"DEBUG: Email credentials not set. Verification code for {to_email} is: {code}")
+        if not email_user: print("DEBUG: EMAIL_USER is missing from environment!")
+        if not email_password: print("DEBUG: EMAIL_PASSWORD is missing from environment!")
+        print(f"--- VERIFICATION CODE for {to_email}: {code} ---")
         return False
 
     subject = "Chaos Club - Verification Code"
@@ -58,7 +61,9 @@ async def send_new_article_email(to_email: str, article_title: str, article_id: 
     email_password = os.getenv("EMAIL_PASSWORD")
     
     if not email_user or not email_password:
-        print(f"DEBUG: Email credentials not set. New article alert for {to_email}: {article_title}")
+        if not email_user: print("DEBUG: EMAIL_USER is missing for article alerts!")
+        if not email_password: print("DEBUG: EMAIL_PASSWORD is missing for article alerts!")
+        print(f"DEBUG: New article alert for {to_email}: {article_title}")
         return False
 
     frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
