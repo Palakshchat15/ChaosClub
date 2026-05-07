@@ -5,6 +5,9 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
 
+# DIAGNOSTIC: Print all keys on startup
+print(f"DIAGNOSTIC STARTUP - Found Keys: {[k for k in os.environ.keys() if 'EMAIL' in k or 'DATABASE' in k]}")
+
 if not os.getenv("RENDER"):
     load_dotenv()
 
@@ -41,7 +44,6 @@ async def send_verification_email(to_email: str, code: str):
     msg.attach(MIMEText(body, 'html'))
 
     try:
-        # Port 587 + start_tls=True is the most compatible combination for Render
         await aiosmtplib.send(
             msg,
             hostname="smtp.gmail.com",
