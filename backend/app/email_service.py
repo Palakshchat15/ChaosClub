@@ -12,12 +12,15 @@ if not os.getenv("RENDER"):
     load_dotenv()
 
 async def send_verification_email(to_email: str, code: str):
-    email_user = os.getenv("EMAIL_USER")
-    email_password = os.getenv("EMAIL_PASSWORD")
+    email_user = os.getenv("EMAIL_USER", "").strip()
+    email_password = os.getenv("EMAIL_PASSWORD", "").strip()
+    
+    # Debug: Check if they are actually populated
+    print(f"DEBUG: Found credentials - User Length: {len(email_user)}, Pwd Length: {len(email_password)}")
     
     if not email_user or not email_password:
-        if not email_user: print("DEBUG: EMAIL_USER is missing from environment!")
-        if not email_password: print("DEBUG: EMAIL_PASSWORD is missing from environment!")
+        if not email_user: print("DEBUG: EMAIL_USER is empty!")
+        if not email_password: print("DEBUG: EMAIL_PASSWORD is empty!")
         print(f"--- VERIFICATION CODE for {to_email}: {code} ---")
         return False
 
@@ -51,16 +54,23 @@ async def send_verification_email(to_email: str, code: str):
             start_tls=True,
             username=email_user,
             password=email_password,
+            timeout=10, # Set a 10s timeout to catch blocks quickly
         )
         print(f"SUCCESS: Verification email sent to {to_email}")
         return True
+    except asyncio.TimeoutError:
+        print(f"NETWORK ERROR: Connection to Gmail timed out for {to_email}. Render/ISP might be blocking Port 587.")
+        return False
+    except aiosmtplib.SMTPAuthenticationError:
+        print(f"AUTH ERROR: Gmail rejected credentials for {to_email}. Check App Password (no spaces!).")
+        return False
     except Exception as e:
-        print(f"CRITICAL ERROR sending email to {to_email}: {e}")
+        print(f"UNEXPECTED ERROR sending email to {to_email}: {type(e).__name__}: {e}")
         return False
 
 async def send_new_article_email(to_email: str, article_title: str, article_id: int):
-    email_user = os.getenv("EMAIL_USER")
-    email_password = os.getenv("EMAIL_PASSWORD")
+    email_user = os.getenv("EMAIL_USER", "").strip()
+    email_password = os.getenv("EMAIL_PASSWORD", "").strip()
     
     if not email_user or not email_password:
         if not email_user: print("DEBUG: EMAIL_USER is missing for article alerts!")
@@ -98,6 +108,7 @@ async def send_new_article_email(to_email: str, article_title: str, article_id: 
             start_tls=True,
             username=email_user,
             password=email_password,
+            timeout=10,
         )
         return True
     except Exception as e:
