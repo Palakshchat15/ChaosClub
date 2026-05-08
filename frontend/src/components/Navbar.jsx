@@ -370,6 +370,54 @@ function Navbar() {
                   {label}
                 </NavLink>
               ))}
+              
+              {/* Auth actions for mobile */}
+              <div style={{ marginTop: "24px", paddingTop: "24px", borderTop: "1px solid rgba(82,255,26,0.1)", display: "flex", flexDirection: "column", gap: "12px" }}>
+                {auth ? (
+                  <>
+                    <NavLink
+                      to="/profile"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={({ isActive }) => `mobile-nav-item${isActive ? " active" : ""}`}
+                    >
+                      My Profile
+                    </NavLink>
+                    <button
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        handleLogout();
+                      }}
+                      style={{
+                        background: "none", border: "none", color: "#ff6b6b", 
+                        fontSize: "clamp(24px, 6vw, 36px)", fontWeight: "600", 
+                        textTransform: "uppercase", textAlign: "left", padding: 0, 
+                        fontFamily: "Bebas Neue, sans-serif", letterSpacing: "0.05em",
+                        cursor: "pointer"
+                      }}
+                    >
+                      Log Out
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <NavLink
+                      to="/login"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={({ isActive }) => `mobile-nav-item${isActive ? " active" : ""}`}
+                    >
+                      Log In
+                    </NavLink>
+                    <NavLink
+                      to="/signup"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={({ isActive }) => `mobile-nav-item${isActive ? " active" : ""}`}
+                      style={{ color: "var(--primary)" }}
+                    >
+                      Join Club
+                    </NavLink>
+                  </>
+                )}
+              </div>
             </motion.div>
             <motion.div
               initial={{ opacity: 0 }}

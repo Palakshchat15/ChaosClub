@@ -61,7 +61,7 @@ a {
   position: sticky;
   top: 0;
   backdrop-filter: blur(14px);
-  z-index: 20;
+  z-index: 99999;
   overflow: visible;
 }
 
@@ -1790,12 +1790,10 @@ CARD FLIP (PREDICT PAGE)==============================*/ .flip-container {
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(8px);
   z-index: 9999;
-  display: grid;
-  place-items: center;
-  padding: 20px;
+  display: flex; justify-content: center; align-items: flex-start; padding: 40px 20px; overflow-y: auto;
 }
 
-.modal-content {
+.modal-content { margin: auto;
   width: min(500px, 100%);
   background: #11141d;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -2514,7 +2512,6 @@ html, body {
     width: 100vw !important;
     left: 0 !important;
     right: 0 !important;
-    overflow: hidden !important;
   }
   .site-header-inner {
     width: 92% !important;
@@ -2558,3 +2555,4 @@ html, body {
     grid-template-columns: 1fr !important;
   }
 }
+

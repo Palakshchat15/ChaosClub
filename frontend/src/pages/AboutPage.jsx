@@ -272,15 +272,19 @@ export default function AboutPage() {
               style={{
                 maxWidth: "900px",
                 width: "95%",
+                maxHeight: "85vh",
+                overflowY: "auto",
+                overscrollBehavior: "contain",
+                WebkitOverflowScrolling: "touch",
+                touchAction: "pan-y",
                 textAlign: "left",
                 padding: "0",
-                overflow: "hidden",
                 background: "#0a0c14"
               }}
             >
               <div style={{ display: "flex", flexDirection: window.innerWidth < 768 ? "column" : "row" }}>
                 <div style={{
-                  flex: "0 0 40%",
+                  flex: window.innerWidth < 768 ? "none" : "0 0 40%",
                   background: selectedCreator.color.includes("gradient") ? selectedCreator.color : `linear-gradient(135deg, ${selectedCreator.color}33, #000)`,
                   position: "relative",
                   display: "flex",
@@ -330,3 +334,4 @@ export default function AboutPage() {
     </div>
   );
 }
+
