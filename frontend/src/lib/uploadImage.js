@@ -1,6 +1,6 @@
 import { getAuth } from "./auth";
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 /**
  * Upload an image file to Cloudinary via the backend and return the CDN URL.
